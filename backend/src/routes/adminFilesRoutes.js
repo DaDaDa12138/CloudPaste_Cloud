@@ -1,9 +1,10 @@
-import { DbTables } from "../constants";
-import { ApiStatus } from "../constants";
-import { createErrorResponse } from "../utils/common";
-import { deleteFileFromS3 } from "../utils/s3Utils";
-import { hashPassword } from "../utils/crypto";
-import { generateFileDownloadUrl } from "../services/fileService";
+import { DbTables } from "../constants/index.js";
+import { ApiStatus } from "../constants/index.js";
+import { createErrorResponse } from "../utils/common.js";
+import { deleteFileFromS3 } from "../utils/s3Utils.js";
+import { hashPassword } from "../utils/crypto.js";
+import { generateFileDownloadUrl } from "../services/fileService.js";
+import { directoryCacheManager, clearCacheForFilePath } from "../utils/DirectoryCache.js";
 
 /**
  * 管理员文件路由
@@ -261,6 +262,9 @@ export function registerAdminFilesRoutes(app) {
       await db.prepare(`DELETE FROM ${DbTables.FILE_PASSWORDS} WHERE file_id = ?`).bind(id).run();
       // 然后删除文件记录
       await db.prepare(`DELETE FROM ${DbTables.FILES} WHERE id = ?`).bind(id).run();
+
+      // 清除与文件相关的缓存
+      await clearCacheForFilePath(db, file.storage_path, file.s3_config_id);
 
       return c.json({
         code: ApiStatus.SUCCESS,

@@ -2,9 +2,9 @@
  * S3存储配置路由
  */
 import { Hono } from "hono";
-import { authMiddleware } from "../middlewares";
-import { validateAdminToken } from "../services/adminService";
-import { checkAndDeleteExpiredApiKey } from "../services/apiKeyService";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { validateAdminToken } from "../services/adminService.js";
+import { checkAndDeleteExpiredApiKey } from "../services/apiKeyService.js";
 import {
   getS3ConfigsByAdmin,
   getPublicS3Configs,
@@ -15,9 +15,16 @@ import {
   deleteS3Config,
   setDefaultS3Config,
   testS3Connection,
-} from "../services/s3ConfigService";
-import { DbTables, ApiStatus } from "../constants";
-import { createErrorResponse, getLocalTimeString } from "../utils/common";
+  getS3ConfigsWithUsage,
+} from "../services/s3ConfigService.js";
+import { DbTables, ApiStatus } from "../constants/index.js";
+import { createErrorResponse, getLocalTimeString } from "../utils/common.js";
+import { HTTPException } from "hono/http-exception";
+import { decryptValue } from "../utils/crypto.js";
+import * as fs from "fs";
+import * as path from "path";
+import { fileURLToPath } from "url";
+import { createS3Client } from "../utils/s3Utils.js";
 
 const s3ConfigRoutes = new Hono();
 

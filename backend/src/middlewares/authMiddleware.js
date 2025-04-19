@@ -2,8 +2,9 @@
  * 认证相关中间件
  */
 
-import { ApiStatus } from "../constants";
-import { validateAdminToken } from "../services/adminService";
+import { HTTPException } from "hono/http-exception";
+import { ApiStatus } from "../constants/index.js";
+import { validateAdminToken } from "../services/adminService.js";
 
 /**
  * JWT管理员认证中间件

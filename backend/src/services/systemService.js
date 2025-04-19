@@ -1,4 +1,4 @@
-import { DbTables, DEFAULT_MAX_UPLOAD_SIZE_MB } from "../constants";
+import { DbTables, DEFAULT_MAX_UPLOAD_SIZE_MB } from "../constants/index.js";
 
 /**
  * 获取所有系统设置
@@ -51,6 +51,28 @@ export async function updateSystemSettings(db, settings) {
         `
         )
         .bind(maxUploadSize.toString())
+        .run();
+    }
+
+    // 处理WebDAV上传模式设置
+    if (settings.webdav_upload_mode !== undefined) {
+      const webdavUploadMode = settings.webdav_upload_mode;
+
+      // 验证是否为有效的上传模式
+      const validModes = ["auto", "proxy", "multipart", "direct"];
+      if (!validModes.includes(webdavUploadMode)) {
+        throw new Error("WebDAV上传模式无效，有效值为: auto, proxy, multipart, direct");
+      }
+
+      // 更新数据库
+      await db
+        .prepare(
+          `
+          INSERT OR REPLACE INTO ${DbTables.SYSTEM_SETTINGS} (key, value, description, updated_at)
+          VALUES ('webdav_upload_mode', ?, 'WebDAV上传模式（auto, proxy, multipart, direct）', datetime('now'))
+        `
+        )
+        .bind(webdavUploadMode)
         .run();
     }
 
